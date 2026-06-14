@@ -23,7 +23,7 @@ To build a reliable enterprise network solution that ensures constant uptime, se
 
 ## Technical Architecture & Implementation Workflow
 
-<img width="1440" height="598" alt="image" src="https://github.com/user-attachments/assets/9f32a3ef-122b-4c7c-8825-68fb5198fc27" />
+<img width="872" height="385" alt="image" src="https://github.com/user-attachments/assets/b7d628f5-c49b-42f1-93c9-05bbca850df8" />
 
 ### HEADQUARTERS 
 > Acts as the corporate network center hosting core computing services, primary routing policies, and internal local distribution.
