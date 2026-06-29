@@ -182,5 +182,65 @@ Interface   Grp  Pri P State   Active          Standby         Virtual IP
 Vl101       104  150 P Active  local           172.20.101.252  172.20.101.254
 Vl102       204  100   Standby 172.20.102.252  local           172.20.102.254
 ```
+```bash
+BR-DSW2#show standby brief 
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Vl101       104  100   Standby 172.21.101.251  local           172.21.101.254
+Vl102       204  150 P Active  local           172.21.102.251  172.21.102.254
+```
+**Step 2: Default Route Failover Test**
 
-BR-DSW2# show standby brief
+1. Normal Condition (Both BGP links up)
+```bash
+HQ-EDGE#show ip route | include 0.0.0.0
+Gateway of last resort is 98.76.1.62 to network 0.0.0.0
+B*    0.0.0.0/0 [20/0] via 98.76.1.62, 01:02:15
+      10.0.0.0/32 is subnetted, 12 subnets
+```
+2. Failover Test (Simulate failure ISP links on HQ-EDGE)
+```bash
+HQ-EDGE#configure terminal 
+Enter configuration commands, one per line.  End with CNTL/Z.
+HQ-EDGE(config)#interface g0/0
+HQ-EDGE(config-if)#shutdown 
+*Jun 29 10:18:18.019: %BGP-5-NBR_RESET: Neighbor 98.76.1.62 reset (Interface flap)
+*Jun 29 10:18:18.024: %BGP-5-ADJCHANGE: neighbor 98.76.1.62 Down Interface flap
+*Jun 29 10:18:18.024: %BGP_SESSION-5-ADJCHANGE: neighbor 98.76.1.62 IPv4 Unicast topology base removed from session  Interface flapxit
+```
+3. Verification a new default route on backup links through BR-EDGE
+```bash
+HQ-EDGE#show ip route | include 0.0.0.0
+Gateway of last resort is 172.20.0.6 to network 0.0.0.0
+D*EX  0.0.0.0/0 [170/15360] via 172.20.0.6, 00:01:59, GigabitEthernet0/2
+      10.0.0.0/32 is subnetted, 10 subnets
+```
+4. Restore HQ-EDGE links
+```bash
+HQ-EDGE(config)#int g0/0
+HQ-EDGE(config-if)#no shutdown 
+*Jun 29 10:22:31.674: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Jun 29 10:22:32.674: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+*Jun 29 10:22:38.906: %BGP-5-ADJCHANGE: neighbor 98.76.1.62 Up 
+```
+
+5. Verify default route return to BGP
+```bash
+HQ-EDGE(config)#do sh ip route 0.0.0.0
+Routing entry for 0.0.0.0/0, supernet
+  Known via "bgp 5000.3", distance 20, metric 0, candidate default path
+  Tag 4259840001, type external
+  Redistributing via eigrp 2026
+  Advertised by eigrp 2026 metric 1000000 10 255 1 1500
+  Last update from 98.76.1.62 00:01:24 ago
+  Routing Descriptor Blocks:
+  * 98.76.1.62, from 98.76.1.62, 00:01:24 ago
+      Route metric is 0, traffic share count is 1
+      AS Hops 1
+      Route tag 4259840001
+      MPLS label: none
+```
+
+
+      
