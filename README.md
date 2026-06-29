@@ -462,7 +462,7 @@ EIGRP-IPv4 VR(WSMB2026) Topology Entry for AS(2026)/ID(10.20.0.3) for 172.21.101
         **Administrator tag is 12**          ←←← This is the important tag
 ```
 
-**Step 4: Branch Tagging Verfication**
+**Step 4: Branch Tagging Verification**
 ```bash
 BR-IR1#sh ip route 172.20.101.0
 Routing entry for 172.20.101.0/24
