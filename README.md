@@ -163,3 +163,24 @@ HQ-EDGE#show users
 
 HQ-EDGE#
 ```
+## 2. High-Availability & Path Redundancy
+
+### Overview
+This objective ensures there is no single point of failure in the network. It combines HSRP for local gateway redundancy and default route failover between HQ-EDGE and BR-EDGE to maintain connectivity even when one link or device fails.
+
+### How It Works
+HSRP provides automatic gateway failover for end devices in VLAN 101 and VLAN 102. Default Route Failover ensures that if one edge router loses its BGP connection to the ISP, the other edge router automatically takes over the default route.
+
+### Verification Commands
+
+**Step 1: HSRP Verification (Dual Gateway)**
+```bash
+HQ-DSW1#show standby brief 
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Vl101       104  150 P Active  local           172.20.101.252  172.20.101.254
+Vl102       204  100   Standby 172.20.102.252  local           172.20.102.254
+```
+
+BR-DSW2# show standby brief
