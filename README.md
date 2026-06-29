@@ -61,10 +61,9 @@ When an engineer connects to a core router or switch console, the device does no
 
 ### Verification Commands
 
-#### *Step 1: Verify AAA authentication configuration and active server pools on HQ-EDGE*
-```text
-HQ-EDGE#show aaa servers 
-
+**Step 1: Check RADIUS Server Status**
+```bash
+HQ-EDGE# show aaa servers 
 RADIUS: id 1, priority 1, host 172.20.101.10, auth-port 1812, acct-port 1813
      State: current UP, duration 180s, previous duration 0s
      Dead: total time 0s, count 0
@@ -73,37 +72,94 @@ RADIUS: id 1, priority 1, host 172.20.101.10, auth-port 1812, acct-port 1813
              Response: accept 0, reject 0, challenge 0
              Response: unexpected 0, server error 0, incorrect 0, time 2362545ms
              Transaction: success 1, failure 0
-             Throttled: transaction 0, timeout 0, failure 0
-     Author: request 0, timeouts 0, failover 0, retransmission 0
-             Response: accept 0, reject 0, challenge 0
-             Response: unexpected 0, server error 0, incorrect 0, time 0ms
-             Transaction: success 0, failure 0
-             Throttled: transaction 0, timeout 0, failure 0
-     Account: request 0, timeouts 0, failover 0, retransmission 0
-             Request: start 0, interim 0, stop 0
-             Response: start 0, interim 0, stop 0
-             Response: unexpected 0, server error 0, incorrect 0, time 0ms
-             Transaction: success 0, failure 0
-             Throttled: transaction 0, timeout 0, failure 0
-     Elapsed time since counters last cleared: 3m
-     Estimated Outstanding Access Transactions: 0
-     Estimated Outstanding Accounting Transactions: 0
-     Estimated Throttled Access Transactions: 0
-     Estimated Throttled Accounting Transactions: 0
-     Maximum Throttled Transactions: access 0, accounting 0
-     Requests per minute past 24 hours:
-             high - 0 hours, 3 minutes ago: 1
-             low  - 0 hours, 0 minutes ago: 0
-             average: 0
+             Throttled: transaction 0, timeout 0, failure 
 ```
-#### *Step 2: Test live console access mapping to RADIUS authenticated session*
-```text
+**Step 2: Check Current User Login**
+```bash
 HQ-EDGE# show users
     Line       User       Host(s)              Idle       Location
 *  0 con 0    radiusr1    idle                 00:00:00   172.20.101.10 (RADIUS)
 
   Interface User Privilege: Level 15 Granted via RADIUS attribute.
 ```
-# Step 3: Verify execution of secure PBKDF2 (Type 8/9) hashing on the local backup database
-HQ-EDGE# show running-config | include username
-username admin privilege 15 secret 9 $9$vE6m$M2R1S...
+**Step 3: Check Local Backup User**
+```bash
+HQ-EDGE# show running-config | include username        
+username admin privilege 15 secret 9 $9$.cl0q7sva2ju6v$PU0yeeGMRgppLtCxJlaBaz3RsEQajXHOh98M/YZyAUI
+```
+
+**Step 4: Test Failover (Backup Local Account)**
+
+To verify that the device can still be accessed when the RADIUS server is unreachable, the following test was performed:
+
+1. The links to the RADIUS server (HQ-SRV) were temporarily shut down:
+```bash
+HQ-EDGE#configure terminal  
+Enter configuration commands, one per line.  End with CNTL/Z.
+HQ-EDGE(config)#int range g0/1-2
+HQ-EDGE(config-if-range)#shutdown 
+*Jun 29 09:38:03.938: %DUAL-5-NBRCHANGE: EIGRP-IPv6 2026: Neighbor FE80::5054:FF:FE18:C203 (GigabitEthernet0/1) is down: interface down
+*Jun 29 09:38:03.939: %DUAL-5-NBRCHANGE: EIGRP-IPv6 2026: Neighbor FE80::5054:FF:FE6D:E6F9 (GigabitEthernet0/2) is down: interface down
+*Jun 29 09:38:03.946: %DUAL-5-NBRCHANGE: EIGRP-IPv4 2026: Neighbor 172.20.0.2 (GigabitEthernet0/1) is down: interface down
+*Jun 29 09:38:03.946: %DUAL-5-NBRCHANGE: EIGRP-IPv4 2026: Neighbor 172.20.0.6 (GigabitEthernet0/2) is down: interface down
+*Jun 29 09:38:05.876: %LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to administratively down
+*Jun 29 09:38:05.908: %LINK-5-CHANGED: Interface GigabitEthernet0/2, changed state to administratively down
+*Jun 29 09:38:06.876: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to down
+*Jun 29 09:38:06.909: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to down
+HQ-EDGE(config-if-range)#exit
+HQ-EDGE(config)#exit
+HQ-EDGE#exit
+```
+
+2. Console login was attempted using the local backup account.
+```bash 
+
+
+
+
+HQ-EDGE con0 is now available
+
+
+
+
+
+Press RETURN to get started.
+
+
+
+
+*Jun 29 09:38:24.494: %SYS-5-CONFIG_I: Configured from console by radiusr1 on console
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************
+
+User Access Verification
+
+Username: admin
+Password: 
+
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************
+```
+
+3. Login successful using local username admin and password Skills39.
+```bash
+HQ-EDGE#show users
+    Line       User       Host(s)              Idle       Location
+*  0 con 0     admin      idle                 00:00:00   
+
+  Interface    User               Mode         Idle     Peer Address
+
+HQ-EDGE#
+```
