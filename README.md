@@ -242,5 +242,235 @@ Routing entry for 0.0.0.0/0, supernet
       MPLS label: none
 ```
 
+## 3. Multi-Protocol Routing Optimization
 
-      
+### Overview
+This objective handles complex routing between different protocols (EIGRP in HQ/DMVPN and OSPF in Branch). Mutual route redistribution is configured with route tagging to prevent routing loops and ensure optimal path selection.
+
+### How It Works
+1. EIGRP is used in Headquarters and DMVPN.
+2. OSPF (OSPFv2 & OSPFv3) is used in the Branch network.
+3. Mutual redistribution is performed at HQ-IR2.
+4. Route tags (34 and 12) are used to control which routes are redistributed and to prevent routing loops.
+
+### Verification Commands
+
+**Step 1: EIGRP Verfication on HQ & DMVPN**
+```bash
+HQ-IR2#show ip eigrp neighbors 
+EIGRP-IPv4 VR(WSMB2026) Address-Family Neighbors for AS(2026)
+H   Address                 Interface              Hold Uptime   SRTT   RTO  Q  Seq
+                                                   (sec)         (ms)       Cnt Num
+2   172.20.0.5              Gi0/0                    12 00:17:23  117   702  0  120
+0   172.20.0.22             Gi0/2                    12 00:19:49   11   100  0  181
+1   172.20.0.18             Gi0/1                    14 01:18:02    8   100  0  175
+
+
+HQ-IR2#show ip route eigrp 
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 172.20.0.5 to network 0.0.0.0
+
+D*EX  0.0.0.0/0 [170/61440] via 172.20.0.5, 00:07:14, GigabitEthernet0/0
+      1.0.0.0/32 is subnetted, 1 subnets
+D EX     1.1.1.1 [170/61440] via 172.20.0.5, 00:17:55, GigabitEthernet0/0
+      2.0.0.0/32 is subnetted, 1 subnets
+D EX     2.2.2.2 [170/61440] via 172.20.0.5, 00:07:14, GigabitEthernet0/0
+      3.0.0.0/32 is subnetted, 1 subnets
+D EX     3.3.3.3 [170/61440] via 172.20.0.5, 00:07:14, GigabitEthernet0/0
+      4.0.0.0/32 is subnetted, 1 subnets
+D EX     4.4.4.4 [170/61440] via 172.20.0.5, 00:07:14, GigabitEthernet0/0
+      8.0.0.0/32 is subnetted, 1 subnets
+D EX     8.8.8.8 [170/61440] via 172.20.0.5, 00:07:14, GigabitEthernet0/0
+      10.0.0.0/32 is subnetted, 12 subnets
+D        10.20.0.1 [90/10880] via 172.20.0.5, 00:17:55, GigabitEthernet0/0
+D        10.20.0.2 [90/16000] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+                   [90/16000] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+                   [90/16000] via 172.20.0.5, 00:17:50, GigabitEthernet0/0
+D        10.20.0.4 [90/10880] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+D        10.20.0.5 [90/10880] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+D        10.30.1.1 [90/76805760] via 172.20.0.5, 00:07:05, GigabitEthernet0/0
+D        10.30.1.2 [90/76805760] via 172.20.0.5, 00:07:06, GigabitEthernet0/0
+      172.20.0.0/16 is variably subnetted, 13 subnets, 3 masks
+D        172.20.0.0/30 [90/15360] via 172.20.0.5, 00:17:55, GigabitEthernet0/0
+D        172.20.0.8/30 
+           [90/15360] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+D        172.20.0.12/30 
+           [90/15360] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+D        172.20.99.0/24 
+           [90/15360] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+           [90/15360] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+D        172.20.101.0/24 
+           [90/15360] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+           [90/15360] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+D        172.20.102.0/24 
+           [90/15360] via 172.20.0.22, 00:17:50, GigabitEthernet0/2
+           [90/15360] via 172.20.0.18, 00:17:50, GigabitEthernet0/1
+      172.30.0.0/24 is subnetted, 2 subnets
+D        172.30.10.0 
+           [90/76810240] via 172.20.0.5, 00:07:05, GigabitEthernet0/0
+D        172.30.20.0 
+           [90/76810240] via 172.20.0.5, 00:07:06, GigabitEthernet0/0
+      172.31.0.0/16 is variably subnetted, 3 subnets, 3 masks
+D        172.31.1.0/24 
+           [90/76805120] via 172.20.0.5, 00:17:55, GigabitEthernet0/0
+```
+**Step 2: OSPF Verfication on BR (Branch) Sites**
+```bash
+BR-IR1#show ip ospf neighbor 
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.21.0.5         0   FULL/  -        00:00:30    172.21.0.14     GigabitEthernet0/2
+10.21.0.4         0   FULL/  -        00:00:34    172.21.0.10     GigabitEthernet0/1
+10.21.0.1         0   FULL/  -        00:00:31    172.21.0.1      GigabitEthernet0/0
+10.20.0.3         0   FULL/  -        00:00:30    172.31.0.1      GigabitEthernet0/3
+
+
+BR-IR1#sh ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 172.21.0.1 to network 0.0.0.0
+
+O*E2  0.0.0.0/0 [110/1] via 172.21.0.1, 01:19:37, GigabitEthernet0/0
+      1.0.0.0/32 is subnetted, 1 subnets
+O E2     1.1.1.1 [110/1] via 172.21.0.1, 00:09:07, GigabitEthernet0/0
+      2.0.0.0/32 is subnetted, 1 subnets
+O E2     2.2.2.2 [110/1] via 172.21.0.1, 01:20:36, GigabitEthernet0/0
+      3.0.0.0/32 is subnetted, 1 subnets
+O E2     3.3.3.3 [110/1] via 172.21.0.1, 01:16:59, GigabitEthernet0/0
+      4.0.0.0/32 is subnetted, 1 subnets
+O E2     4.4.4.4 [110/1] via 172.21.0.1, 01:14:35, GigabitEthernet0/0
+      8.0.0.0/32 is subnetted, 1 subnets
+O E2     8.8.8.8 [110/1] via 172.21.0.1, 01:19:37, GigabitEthernet0/0
+      10.0.0.0/32 is subnetted, 12 subnets
+O E2     10.20.0.1 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     10.20.0.2 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     10.20.0.3 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     10.20.0.4 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     10.20.0.5 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O        10.21.0.1 [110/4] via 172.21.0.1, 01:20:36, GigabitEthernet0/0
+O        10.21.0.3 [110/5] via 172.21.0.14, 01:15:28, GigabitEthernet0/2
+                   [110/5] via 172.21.0.1, 01:15:18, GigabitEthernet0/0
+O        10.21.0.4 [110/2] via 172.21.0.10, 01:18:11, GigabitEthernet0/1
+O        10.21.0.5 [110/2] via 172.21.0.14, 01:18:21, GigabitEthernet0/2
+O E2     10.30.1.1 [110/20] via 172.31.0.1, 00:08:58, GigabitEthernet0/3
+O E2     10.30.1.2 [110/20] via 172.31.0.1, 00:08:58, GigabitEthernet0/3
+      172.20.0.0/24 is subnetted, 4 subnets
+O E2     172.20.0.0 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     172.20.99.0 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     172.20.101.0 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+O E2     172.20.102.0 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+      172.21.0.0/16 is variably subnetted, 13 subnets, 3 masks
+O        172.21.0.0/24 is a summary, 01:22:08, Null0
+O        172.21.0.4/30 [110/4] via 172.21.0.1, 01:20:36, GigabitEthernet0/0
+O        172.21.0.16/30 [110/4] via 172.21.0.14, 01:18:21, GigabitEthernet0/2
+O        172.21.0.20/30 [110/4] via 172.21.0.10, 01:18:11, GigabitEthernet0/1
+O IA     172.21.99.0/24 [110/2] via 172.21.0.14, 01:18:21, GigabitEthernet0/2
+                        [110/2] via 172.21.0.10, 01:18:11, GigabitEthernet0/1
+O IA     172.21.101.0/24 [110/2] via 172.21.0.14, 01:18:21, GigabitEthernet0/2
+                         [110/2] via 172.21.0.10, 01:18:11, GigabitEthernet0/1
+O IA     172.21.102.0/24 [110/2] via 172.21.0.14, 01:18:21, GigabitEthernet0/2
+                         [110/2] via 172.21.0.10, 01:18:11, GigabitEthernet0/1
+      172.30.0.0/24 is subnetted, 2 subnets
+O E2     172.30.10.0 [110/20] via 172.31.0.1, 00:08:58, GigabitEthernet0/3
+O E2     172.30.20.0 [110/20] via 172.31.0.1, 00:08:58, GigabitEthernet0/3
+      172.31.0.0/16 is variably subnetted, 3 subnets, 3 masks
+O E2     172.31.1.0/24 [110/20] via 172.31.0.1, 00:19:29, GigabitEthernet0/3
+```
+
+**Step 3: Route Redistribution & Tagging Verification**
+```bash
+HQ-IR2#sh route-map 
+route-map RMv6-EIGRP-OSPF, deny, sequence 10
+  Match clauses:
+     tag 12 
+  Set clauses:
+  Policy routing matches: 0 packets, 0 bytes
+route-map RMv6-EIGRP-OSPF, permit, sequence 20
+  Match clauses:
+  Set clauses:
+    tag 34 
+  Policy routing matches: 0 packets, 0 bytes
+route-map RMv6-OSPF-EIGRP, deny, sequence 10
+  Match clauses:
+     tag 34 
+  Set clauses:
+  Policy routing matches: 0 packets, 0 bytes
+route-map RMv6-OSPF-EIGRP, permit, sequence 20
+  Match clauses:
+  Set clauses:
+    metric 1000000 1 255 1 1500
+    tag 12 
+  Policy routing matches: 0 packets, 0 bytes
+route-map RM-EIGRP-OSPF, deny, sequence 10
+  Match clauses:
+     tag 12 
+  Set clauses:
+  Policy routing matches: 0 packets, 0 bytes
+route-map RM-EIGRP-OSPF, permit, sequence 20
+  Match clauses:
+  Set clauses:
+    tag 34 
+  Policy routing matches: 0 packets, 0 bytes
+route-map RM-OSPF-EIGRP, deny, sequence 10
+  Match clauses:
+     tag 34 
+  Set clauses:
+  Policy routing matches: 0 packets, 0 bytes
+route-map RM-OSPF-EIGRP, permit, sequence 20
+  Match clauses:
+  Set clauses:
+    metric 1000000 1 255 1 1500
+    tag 12 
+  Policy routing matches: 0 packets, 0 bytes
+
+
+
+HQ-IR2#show ip eigrp topology 172.21.101.0/24        
+EIGRP-IPv4 VR(WSMB2026) Topology Entry for AS(2026)/ID(10.20.0.3) for 172.21.101.0/24
+  State is Passive, Query origin flag is 1, 1 Successor(s), FD is 1310720
+  Descriptor Blocks:
+  172.31.0.2, from Redistributed, Send flag is 0x0
+      Composite metric is (1310720/0), route is External
+      Vector metric:
+        Minimum bandwidth is 1000000 Kbit
+        Total delay is 10000000 picoseconds
+        Reliability is 255/255
+        Load is 1/255
+        Minimum MTU is 1500
+        Hop count is 0
+        Originating router is 10.20.0.3
+      External data:
+        AS number of route is 104
+        External protocol is OSPF, external metric is 3
+        **Administrator tag is 12**          ←←← This is the important tag
+```
+
+**Step 4: Branch Tagging Verfication**
+```bash
+BR-IR1#sh ip route 172.20.101.0
+Routing entry for 172.20.101.0/24
+  Known via "ospf 104", distance 110, metric 20
+  Tag 34, type extern 2, forward metric 4
+  Last update from 172.31.0.1 on GigabitEthernet0/3, 00:28:28 ago
+  Routing Descriptor Blocks:
+  * 172.31.0.1, from 10.20.0.3, 00:28:28 ago, via GigabitEthernet0/3
+      Route metric is 20, traffic share count is 1
+      Route tag 34
+```
