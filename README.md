@@ -27,6 +27,10 @@ To build a reliable, secure, and resilient enterprise network that ensures:
 ## Technical Architecture & Implementation Workflow
 
 <img width="872" height="385" alt="image" src="https://github.com/user-attachments/assets/b7d628f5-c49b-42f1-93c9-05bbca850df8" />
+<img width="575" height="959" alt="image" src="https://github.com/user-attachments/assets/d8420e00-cb3f-4050-8812-ace5500e1736" />
+<img width="563" height="976" alt="image" src="https://github.com/user-attachments/assets/5b274108-8530-438c-bd8a-631940c5067f" />
+<img width="558" height="661" alt="image" src="https://github.com/user-attachments/assets/77c6743d-18a2-4679-8ac8-c0352d41f1ed" />
+
 
 ### Core Technologies
 - **Switching**: VTPv3, EtherChannel (LACP & PAgP), Rapid STP, Port Security
