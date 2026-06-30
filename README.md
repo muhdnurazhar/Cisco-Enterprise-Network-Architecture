@@ -807,9 +807,6 @@ Packet sent with a source address of DEAD:BEEF:CAFE:FFFF::2
 Success rate is 100 percent (5/5), round-trip min/avg/max = 18/21/29 ms
 
 
-REM1-RTR#traceroute dead:beef:cafe:1101::10 ?
-  <cr>  <cr>
-
 REM1-RTR#traceroute dead:beef:cafe:1101::10 
 Type escape sequence to abort.
 Tracing the route to DEAD:BEEF:CAFE:1101::10
