@@ -474,3 +474,97 @@ Routing entry for 172.20.101.0/24
       Route metric is 20, traffic share count is 1
       Route tag 34
 ```
+
+**Step 5: IPv6 Routing Verification (OSPFv3 & EIGRPv6)**
+Purpose:
+To prove that IPv6 routing is also working with mutual redistribution between EIGRPv6 and OSPFv3, including proper tagging.
+
+EIGRP IPv6:
+```bash
+HQ-IR2#show ipv6 eigrp neighbors 
+EIGRP-IPv6 VR(WSMB2026) Address-Family Neighbors for AS(2026)
+H   Address                 Interface              Hold Uptime   SRTT   RTO  Q  Seq
+                                                   (sec)         (ms)       Cnt Num
+2   Link-local address:     Gi0/2                    13 00:03:46  186  1116  0  12
+    FE80::5054:FF:FEC5:513
+1   Link-local address:     Gi0/1                    14 00:05:10   84   504  0  11
+    FE80::5054:FF:FED3:F191
+0   Link-local address:     Gi0/0                    12 00:05:27  112   672  0  7
+    FE80::5054:FF:FEC0:8C2B
+```
+
+OSPF IPv6:
+```bash
+BR-IR1#show ipv6 ospf neighbor 
+
+            OSPFv3 Router with ID (10.21.0.2) (Process ID 106)
+
+Neighbor ID     Pri   State           Dead Time   Interface ID    Interface
+10.20.0.3         1   FULL/BDR        00:00:34    5               GigabitEthernet0/3
+10.21.0.5         1   FULL/BDR        00:00:39    13              GigabitEthernet0/2
+10.21.0.4         1   FULL/BDR        00:00:34    12              GigabitEthernet0/1
+10.21.0.1         1   FULL/BDR        00:00:35    3               GigabitEthernet0/0
+BR-IR1#
+```
+
+Verification of IPv6 Route Redistribution & Tagging: 
+EIGRP: 
+```bash
+HQ-IR2#show ipv6 eigrp topology dead:beef:cafe:2101::/64        
+EIGRP-IPv6 VR(WSMB2026) Topology Entry for AS(2026)/ID(10.20.0.3) for DEAD:BEEF:CAFE:2101::/64
+  State is Passive, Query origin flag is 1, 1 Successor(s), FD is 1310720
+  Descriptor Blocks:
+  FE80::5054:FF:FEC0:B6C2, from Redistributed, Send flag is 0x0
+      Composite metric is (1310720/0), route is External
+      Vector metric:
+        Minimum bandwidth is 1000000 Kbit
+        Total delay is 10000000 picoseconds
+        Reliability is 255/255
+        Load is 1/255
+        Minimum MTU is 1500
+        Hop count is 0
+      External data:
+        Originating router is 10.20.0.3 (this system)
+        AS number of route is 106
+        External protocol is OSPF, external metric is 3
+        Administrator tag is 12 (0x0000000C)
+```
+OSPF: only tag 34 redisributed by EIGRP routing protocol on ABR (HQ-IR2)
+```bash
+BR-IR1#show ipv6 route ospf                     
+IPv6 Routing Table - default - 12 entries
+Codes: C - Connected, L - Local, S - Static, U - Per-user Static route
+       B - BGP, HA - Home Agent, MR - Mobile Router, R - RIP
+       H - NHRP, I1 - ISIS L1, I2 - ISIS L2, IA - ISIS interarea
+       IS - ISIS summary, D - EIGRP, EX - EIGRP external, NM - NEMO
+       ND - ND Default, NDp - ND Prefix, DCE - Destination, NDr - Redirect
+       RL - RPL, O - OSPF Intra, OI - OSPF Inter, OE1 - OSPF ext 1
+       OE2 - OSPF ext 2, ON1 - OSPF NSSA ext 1, ON2 - OSPF NSSA ext 2
+       la - LISP alt, lr - LISP site-registrations, ld - LISP dyn-eid
+       lA - LISP away, a - Application
+OE2 DEAD:BEEF:CAFE::3333/128 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE::4444/128 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE:1101::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE:1102::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE:1999::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+O   DEAD:BEEF:CAFE:2101::/64 [110/2]
+     via FE80::5054:FF:FE91:F565, GigabitEthernet0/2
+     via FE80::5054:FF:FEED:3598, GigabitEthernet0/1
+O   DEAD:BEEF:CAFE:2102::/64 [110/2]
+     via FE80::5054:FF:FE91:F565, GigabitEthernet0/2
+     via FE80::5054:FF:FEED:3598, GigabitEthernet0/1
+O   DEAD:BEEF:CAFE:2999::/64 [110/2]
+     via FE80::5054:FF:FE91:F565, GigabitEthernet0/2
+     via FE80::5054:FF:FEED:3598, GigabitEthernet0/1
+OE2 DEAD:BEEF:CAFE:3001::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE:3002::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+OE2 DEAD:BEEF:CAFE:FFFF::/64 [110/20], tag 34
+     via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+```
