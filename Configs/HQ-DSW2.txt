@@ -1,0 +1,252 @@
+Building configuration...
+
+Current configuration : 6067 bytes
+!
+! Last configuration change at 23:41:07 MYT Tue Jun 30 2026
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname HQ-DSW2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 8 $8$nWt48gs05jRLLv$ksi5h1YO/Ya7/qWEOZFcF6aa44f2r6BeMDl2Tik6.Qg
+!
+no aaa new-model
+clock timezone MYT 8 0
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+ip domain-name wsmb2026.net
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+!
+port-channel load-balance src-dst-mac
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+spanning-tree vlan 101-102,999 priority 28672
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.20.0.5 255.255.255.255
+!
+interface Port-channel12
+ switchport trunk allowed vlan 101,102,999
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 999
+ switchport trunk pruning vlan 101,102,999
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet0/0
+ switchport trunk allowed vlan 101,102,999
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 999
+ switchport trunk pruning vlan 101,102,999
+ switchport mode trunk
+ switchport nonegotiate
+ negotiation auto
+!
+interface GigabitEthernet0/1
+ no switchport
+ ip address 172.20.0.18 255.255.255.252
+ negotiation auto
+ ipv6 enable
+!
+interface GigabitEthernet0/2
+ no switchport
+ ip address 172.20.0.14 255.255.255.252
+ negotiation auto
+ ipv6 enable
+!
+interface GigabitEthernet0/3
+ negotiation auto
+!
+interface GigabitEthernet1/0
+ switchport trunk allowed vlan 101,102,999
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 999
+ switchport trunk pruning vlan 101,102,999
+ switchport mode trunk
+ switchport nonegotiate
+ negotiation auto
+ channel-group 12 mode passive
+!
+interface GigabitEthernet1/1
+ switchport trunk allowed vlan 101,102,999
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 999
+ switchport trunk pruning vlan 101,102,999
+ switchport mode trunk
+ switchport nonegotiate
+ negotiation auto
+ channel-group 12 mode passive
+!
+interface GigabitEthernet1/2
+ switchport trunk allowed vlan 101,102,999
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 999
+ switchport trunk pruning vlan 101,102,999
+ switchport mode trunk
+ switchport nonegotiate
+ negotiation auto
+ channel-group 12 mode passive
+!
+interface Vlan101
+ ip address 172.20.101.252 255.255.255.0
+ ip helper-address 172.20.101.10 
+ standby version 2
+ standby 104 ip 172.20.101.254
+ standby 104 preempt
+ ipv6 address DEAD:BEEF:CAFE:1101::FFF2/64
+ ipv6 enable
+!
+interface Vlan102
+ ip address 172.20.102.252 255.255.255.0
+ ip helper-address 172.20.101.10 
+ standby version 2
+ standby 204 ip 172.20.102.254
+ standby 204 priority 150
+ ipv6 address DEAD:BEEF:CAFE:1102::FFF2/64
+ ipv6 enable
+!
+interface Vlan999
+ ip address 172.20.99.252 255.255.255.0
+ ipv6 address DEAD:BEEF:CAFE:1999::FFF2/64
+ ipv6 enable
+!
+!
+router eigrp WSMB2026
+ !
+ address-family ipv4 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/2
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface Vlan999
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+  exit-af-topology
+  network 10.20.0.5 0.0.0.0
+  network 172.20.0.12 0.0.0.3
+  network 172.20.0.16 0.0.0.3
+  network 172.20.99.0 0.0.0.255
+  network 172.20.101.0 0.0.0.255
+  network 172.20.102.0 0.0.0.255
+  eigrp router-id 10.20.0.5
+ exit-address-family
+ !
+ address-family ipv6 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/2
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface Vlan999
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+  exit-af-topology
+ exit-address-family
+!
+ip forward-protocol nd
+!
+ip http server
+ip http secure-server
+!
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+!
+!
+!
+!
+control-plane
+!
+banner exec ^C
+IOSv - Cisco Systems Confidential -
+
+Supplemental End User License Restrictions
+
+This IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.
+
+By using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.
+^C
+banner incoming ^C
+IOSv - Cisco Systems Confidential -
+
+Supplemental End User License Restrictions
+
+This IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.
+
+By using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.
+^C
+banner login ^C
+IOSv - Cisco Systems Confidential -
+
+Supplemental End User License Restrictions
+
+This IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.
+
+By using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.
+^C
+!
+line con 0
+ exec-timeout 0 0
+line aux 0
+line vty 0 4
+ exec-timeout 0 0
+ login
+!
+!
+end

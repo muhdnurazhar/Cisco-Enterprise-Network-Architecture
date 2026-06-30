@@ -1,0 +1,332 @@
+Building configuration...
+
+  
+Current configuration : 10817 bytes
+!
+! Last configuration change at 23:37:27 MYT Tue Jun 30 2026
+!
+version 15.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname REM2-RTR
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 8 $8$E0AMZolR5KbX7P$4X5htAF14OrWh.icZc7ihfNjQA4BEAYa0tfFIY5Ismg
+!
+no aaa new-model
+!
+!
+!
+clock timezone MYT 8 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip dhcp pool DHCP
+ network 172.30.20.0 255.255.255.0
+ default-router 172.30.20.254 
+ dns-server 98.76.54.10 
+!
+!
+!
+ip domain name wsmb2026.net
+ip name-server 98.76.54.10
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+crypto pki trustpoint WSMB-CA
+ enrollment mode ra
+ enrollment url http://98.76.54.10:80/certsrv/mscep/mscep.dll
+ usage ike
+ serial-number
+ fqdn REM2-RTR.wsmb2026.net 
+ revocation-check none
+ rsakeypair WSMB-RSA
+!
+!
+crypto pki certificate chain WSMB-CA
+ certificate 1E0000000E09BE413590F1E3E900000000000E
+  30820476 3082035E A0030201 0202131E 0000000E 09BE4135 90F1E3E9 00000000 
+  000E300D 06092A86 4886F70D 01010B05 00304531 13301106 0A099226 8993F22C 
+  64011916 036E6574 31183016 060A0992 268993F2 2C640119 16087773 6D623230 
+  32363114 30120603 55040313 0B57534D 42323032 362D4341 301E170D 32363036 
+  32333134 34373031 5A170D32 38303632 32313434 3730315A 3047311E 301C0603 
+  55040513 1539374D 4C465932 52514743 4458424D 3653394C 51573125 30230609 
+  2A864886 F70D0109 02131652 454D322D 5254522E 77736D62 32303236 2E6E6574 
+  20308201 22300D06 092A8648 86F70D01 01010500 0382010F 00308201 0A028201 
+  010094B5 DF9412A9 3A7C9472 C08D9A6D B4A3E804 EFBC27A0 92F367E8 5F16DBED 
+  13B9CFB6 CA1AEE97 9036B8C9 D205C6C5 7F2530F2 F749C439 32983D68 628FECC7 
+  CCDAE366 27CB15E5 6C602A7C D44A3015 ACC4A2B2 4291926E 758D62CD 1BAE08C3 
+  C22F65A7 003804AB 95DA0157 CBB56510 4F961015 6F03DEDC D74207F8 1331B084 
+  441DD53E 34F3938E B1FE6F92 276FEFE5 2FBED860 433503AE B67E23A5 C5149DA6 
+  AD94BAFB C41C64E2 94DAF4AC 12C759E0 41DCAB2A 14B30439 6402D1F5 900124AC 
+  BD1EA623 D28B6836 64C2FC4C A7F2A688 A7910F2D D021A008 5AF6FD56 D56B43BA 
+  3CEA0934 E836E5EA 03E6D5C4 C5EC157C C7C426E6 0BAA9DB0 8D2A2D8E 7269FA9B 
+  60C30203 010001A3 82015B30 82015730 0E060355 1D0F0101 FF040403 0205A030 
+  1D060355 1D0E0416 0414D1CE BD30D0B3 799C0295 54D8DE49 F4574E82 9B87301F 
+  0603551D 23041830 168014F2 0DCFA452 291499B1 C498D137 5A29B664 3E8EF230 
+  3E060355 1D1F0437 30353033 A031A02F 862D6874 74703A2F 2F39382E 37362E35 
+  342E3130 2F436572 74456E72 6F6C6C2F 57534D42 32303236 2D43412E 63726C30 
+  4906082B 06010505 07010104 3D303B30 3906082B 06010505 07300286 2D687474 
+  703A2F2F 39382E37 362E3534 2E31302F 43657274 456E726F 6C6C2F57 534D4232 
+  3032362D 43412E63 72743024 0603551D 110101FF 041A3018 82165245 4D322D52 
+  54522E77 736D6232 3032362E 6E657420 303F0609 2B060104 01823714 0204321E 
+  30004900 50005300 45004300 49006E00 74006500 72006D00 65006400 69006100 
+  74006500 4F006600 66006C00 69006E00 65301306 03551D25 040C300A 06082B06 
+  01050508 0202300D 06092A86 4886F70D 01010B05 00038201 01009C01 EAC75F6E 
+  F02524C7 B8014B71 B365D6F7 18FE76ED 17A6F675 2B1F24CE 3A99522E 6154EAD8 
+  7C850280 293F7502 7587DF6F BC5F00C6 DEDA8C4E 077006B0 E3371AD1 FE6A6CA7 
+  6EA9A858 791A57D1 DC6AAD07 CECC86EE 72CB0256 4AAE8E12 5F87B80C CFCA839D 
+  4C4B307C 57A0B748 7F3B8673 21582D4E 5610E361 E612B8C1 AD1FA161 CF1FB863 
+  2A5679AA 2BC4684D 2F70DC1D 7E224B71 A90B8DFC AE48FDE8 9BD60286 C23AD130 
+  66499283 03251FD8 295E3279 EC57B8C4 9E72FD5E 1C8CA980 061DAE67 081D7886 
+  D9BF7127 A9FE991B 92A26064 A3410F52 F6F53E2C AADAD182 D8AA90B1 7F0FD724 
+  E5928110 278DB85B CF738CD6 5FA2D33D 6DC8FCB3 A8CCE0ED DF8F
+  	quit
+ certificate ca 1675829B1A81C1BE4EF1C0D9FF3A6127
+  30820365 3082024D A0030201 02021016 75829B1A 81C1BE4E F1C0D9FF 3A612730 
+  0D06092A 864886F7 0D01010B 05003045 31133011 060A0992 268993F2 2C640119 
+  16036E65 74311830 16060A09 92268993 F22C6401 19160877 736D6232 30323631 
+  14301206 03550403 130B5753 4D423230 32362D43 41301E17 0D323531 30303130 
+  37303530 385A170D 33353130 30313037 31353037 5A304531 13301106 0A099226 
+  8993F22C 64011916 036E6574 31183016 060A0992 268993F2 2C640119 16087773 
+  6D623230 32363114 30120603 55040313 0B57534D 42323032 362D4341 30820122 
+  300D0609 2A864886 F70D0101 01050003 82010F00 3082010A 02820101 00D3AAFD 
+  81E25DF0 A9B0D3F1 78B20F6A 9F630066 6A231FA8 FF16BE45 A7E7FCB6 B3EF1620 
+  99D92F7E 83B5482D 469735F3 BA0DDAC8 D27AC39A 708C410A 80448F2A 29A2FC96 
+  6CA81C11 FDE9B2A0 670E8A70 4EC6AA3C 62768AFA 85CE8BBD 66CDF4A2 EF1F058B 
+  1F6F3BEB 1AE354E3 648C4FF5 941DB5C9 00AE85F7 FA0FA9F0 FABEF13F 6A30DA5C 
+  382018C7 732BE86F BF7DF839 9A8C3FBD 9C13E0D3 9A30CC2B 877953B2 ACB24DC3 
+  7712AE22 B002C82C 213ECFB4 DCE8BF4C EFB75909 F0496373 151F0DC2 59CCA677 
+  86099BEF CC869ADA A8674050 E9B1C60B 2FD55ECE BB13E045 6BCD21CE E0DB4E5D 
+  17454E81 3E925615 EC7314D6 8137C918 67309D01 44785D86 640AA87E 01020301 
+  0001A351 304F300B 0603551D 0F040403 02018630 0F060355 1D130101 FF040530 
+  030101FF 301D0603 551D0E04 160414F2 0DCFA452 291499B1 C498D137 5A29B664 
+  3E8EF230 1006092B 06010401 82371501 04030201 00300D06 092A8648 86F70D01 
+  010B0500 03820101 00C69EF2 0AD20C6D 95C59E8D FCC3F642 3F33B9E9 6B86C550 
+  0B76CD88 D3FB0C88 D0DAA4C6 3D77A34E 04F700DA 76EBFE8D 9B125F7F CFA3AE82 
+  AC05A116 91FD3A45 8C7A6F3F D6C209E0 52D48859 0A0655A1 4AEA41DC AEAE58FF 
+  C5596BDB BECE57CD E10427BE 592B73E7 AB7578E2 42A83A9B 6B854D73 056A2CFA 
+  3FE4C023 9880C787 2E94E1A9 741757A5 C8F4D188 E58DF166 1B2C122A B10828F4 
+  39665024 82ECCF5F 31713C71 1C99A04F C4D955D5 0B2D6F6B E6248286 999E2CCC 
+  F7A9BA02 FCD3C3E6 6F9DD807 7ACBE33D 81B972A5 41756364 85C30CEE D008C58A 
+  476694A0 BF68A9E5 6DD6D6AE 7499F388 AB84E840 6AFC6970 751583ED 350BD93C 
+  BA3B6DEA AF0071A9 11
+  	quit
+!
+redundancy
+!
+!
+! 
+!
+crypto ikev2 proposal IKEV2-PROPOSAL 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+!
+crypto ikev2 policy IKEV2-POLICY 
+ proposal IKEV2-PROPOSAL
+!
+!
+crypto ikev2 profile IKEV2-PROFILE
+ match identity remote address 1.1.1.1 255.255.255.255 
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint WSMB-CA
+!
+!
+!
+crypto ipsec transform-set IPSEC-TRANSFORM-SET esp-aes 256 esp-sha256-hmac 
+ mode tunnel
+!
+crypto ipsec profile IPSEC-PROFILE
+ set transform-set IPSEC-TRANSFORM-SET 
+ set ikev2-profile IKEV2-PROFILE
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 4.4.4.4 255.255.255.255
+!
+interface Loopback1
+ ip address 10.30.1.2 255.255.255.255
+ ipv6 address DEAD:BEEF:CAFE::4444/128
+ ipv6 enable
+!
+interface Tunnel100
+ ip address 172.31.1.3 255.255.255.0
+ no ip redirects
+ ip mtu 1400
+ ip nhrp authentication Skills39
+ ip nhrp map 172.31.1.1 1.1.1.1
+ ip nhrp map multicast 1.1.1.1
+ ip nhrp network-id 104
+ ip nhrp nhs 173.31.1.1
+ ip nhrp nhs 172.31.1.1
+ ip tcp adjust-mss 1360
+ ipv6 address DEAD:BEEF:CAFE:FFFF::3/64
+ ipv6 enable
+ ipv6 nhrp authentication Skills39
+ ipv6 nhrp map DEAD:BEEF:CAFE:FFFF::1/64 1.1.1.1
+ ipv6 nhrp map multicast 1.1.1.1
+ ipv6 nhrp map multicast DEAD:BEEF:CAFE:FFFF::1
+ ipv6 nhrp network-id 106
+ ipv6 nhrp nhs DEAD:BEEF:CAFE:FFFF::1
+ tunnel source Loopback0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile IPSEC-PROFILE
+!
+interface GigabitEthernet0/0
+ ip address 98.76.3.1 255.255.255.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.30.20.254 255.255.255.0
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 address DEAD:BEEF:CAFE:3002::FFFF/64
+ ipv6 enable
+!
+interface GigabitEthernet0/2
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp WSMB2026
+ !
+ address-family ipv6 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface Loopback1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface Tunnel100
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+  exit-af-topology
+  eigrp router-id 10.30.1.2
+ exit-address-family
+ !
+ address-family ipv4 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Tunnel100
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+  exit-af-topology
+  network 10.30.1.2 0.0.0.0
+  network 172.30.20.0 0.0.0.255
+  network 172.31.1.0 0.0.0.255
+  eigrp router-id 10.30.1.2
+ exit-address-family
+!
+router bgp 15003.1
+ bgp asnotation dot
+ bgp log-neighbor-changes
+ network 4.4.4.4 mask 255.255.255.255
+ neighbor 98.76.3.254 remote-as 65000.1
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+ipv6 ioam timestamp
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+line aux 0
+line vty 0 4
+ exec-timeout 0 0
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end

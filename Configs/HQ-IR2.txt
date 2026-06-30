@@ -1,0 +1,255 @@
+Building configuration...
+
+Current configuration : 5689 bytes
+!
+! Last configuration change at 23:39:20 MYT Tue Jun 30 2026
+!
+version 15.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname HQ-IR2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 8 $8$.FUYmkdFhwpJIv$2PacB8MSLYaQ0fzXoagowEI/kQkrruN12EFftQwNxF.
+!
+no aaa new-model
+!
+!
+!
+clock timezone MYT 8 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name wsmb2026.net
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.20.0.3 255.255.255.255
+!
+interface GigabitEthernet0/0
+ ip address 172.20.0.6 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+!
+interface GigabitEthernet0/1
+ ip address 172.20.0.17 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+!
+interface GigabitEthernet0/2
+ ip address 172.20.0.21 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+!
+interface GigabitEthernet0/3
+ ip address 172.31.0.1 255.255.255.252
+ ip ospf network point-to-point
+ ip ospf 104 area 20
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ ipv6 ospf 106 area 0
+!
+!
+router eigrp WSMB2026
+ !
+ address-family ipv4 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/0
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/2
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+   redistribute ospf 104 route-map RM-OSPF-EIGRP
+   offset-list 0 out 1000 GigabitEthernet0/1 
+   offset-list 0 out 1000 GigabitEthernet0/2 
+  exit-af-topology
+  network 10.20.0.3 0.0.0.0
+  network 172.20.0.4 0.0.0.3
+  network 172.20.0.16 0.0.0.3
+  network 172.20.0.20 0.0.0.3
+  eigrp router-id 10.20.0.3
+ exit-address-family
+ !
+ address-family ipv6 unicast autonomous-system 2026
+  !
+  af-interface default
+   passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/0
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/1
+   no passive-interface
+  exit-af-interface
+  !
+  af-interface GigabitEthernet0/2
+   no passive-interface
+  exit-af-interface
+  !
+  topology base
+   redistribute ospf 106 route-map RMv6-OSPF-EIGRP
+  exit-af-topology
+ exit-address-family
+!
+router ospf 104
+ router-id 10.20.0.3
+ summary-address 172.20.0.0 255.255.255.0 tag 34
+ redistribute eigrp 2026 subnets tag 34 route-map RM-EIGRP-OSPF
+ passive-interface default
+ no passive-interface GigabitEthernet0/3
+ default-information originate
+ distance 200
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ipv6 router ospf 106
+ router-id 10.20.0.3
+ passive-interface default
+ no passive-interface GigabitEthernet0/3
+ redistribute eigrp 2026 route-map RMv6-EIGRP-OSPF
+!
+ipv6 ioam timestamp
+!
+route-map RMv6-EIGRP-OSPF deny 10
+ match tag 12
+!
+route-map RMv6-EIGRP-OSPF permit 20
+ set tag 34
+!
+route-map RMv6-OSPF-EIGRP deny 10
+ match tag 34
+!
+route-map RMv6-OSPF-EIGRP permit 20
+ set metric 1000000 1 255 1 1500
+ set tag 12
+!
+route-map RM-EIGRP-OSPF deny 10
+ match tag 12
+!
+route-map RM-EIGRP-OSPF permit 20
+ set tag 34
+!
+route-map RM-OSPF-EIGRP deny 10
+ match tag 34
+!
+route-map RM-OSPF-EIGRP permit 20
+ set metric 1000000 1 255 1 1500
+ set tag 12
+!
+snmp-server group snmpgroup v3 priv access 20
+snmp-server location Putrajaya, Malaysia
+snmp-server contact admin@wsmb2026.net
+snmp-server chassis-id 
+!
+access-list 20 permit 172.20.101.10
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+line aux 0
+line vty 0 4
+ exec-timeout 0 0
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end

@@ -1,0 +1,219 @@
+Building configuration...
+
+Current configuration : 5081 bytes
+!
+! Last configuration change at 23:42:18 MYT Tue Jun 30 2026 by radiusr1
+!
+version 15.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname BR-EDGE
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 8 $8$AC34tGU07AHLTP$bzBCQ7toJ5pS.dborN4p6zO1ORDwPFdwWMYsFqJmoYw
+!
+aaa new-model
+!
+!
+aaa authentication login default group radius local
+aaa authorization console
+aaa authorization exec default group radius local 
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+clock timezone MYT 8 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip dhcp pool DHCP-VLAN101
+ network 172.21.101.0 255.255.255.0
+ default-router 172.21.101.254 
+ dns-server 172.20.101.10 
+!
+ip dhcp pool DHCP-VLAN102
+ default-router 172.21.101.254 
+ dns-server 172.20.101.10 
+!
+!
+!
+ip domain name wsmb2026.net
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username admin privilege 15 secret 9 $9$5fSz1O6Dn/LD8P$xUd1AZ1r49aidY.8lKmRujwSUyNnDvuEbO.cHNMowlk
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+interface Loopback1
+ ip address 10.21.0.1 255.255.255.255
+ ip ospf network point-to-point
+ ip ospf 104 area 0
+!
+interface GigabitEthernet0/0
+ ip address 98.76.1.65 255.255.255.192
+ ip nat outside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.21.0.1 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf network point-to-point
+ ip ospf 104 area 0
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ ipv6 ospf 106 area 0
+!
+interface GigabitEthernet0/2
+ ip address 172.21.0.5 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf network point-to-point
+ ip ospf 104 area 0
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ ipv6 ospf 106 area 0
+!
+interface GigabitEthernet0/3
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 104
+ router-id 10.21.0.1
+ redistribute bgp 5001.2 subnets
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface GigabitEthernet0/2
+ default-information originate
+!
+router bgp 5001.2
+ bgp asnotation dot
+ bgp log-neighbor-changes
+ network 2.2.2.2 mask 255.255.255.255
+ neighbor 98.76.1.126 remote-as 65000.1
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat pool nat 98.76.1.100 98.76.1.110 netmask 255.255.255.192
+ip nat inside source list 10 pool nat
+!
+ip radius source-interface Loopback1 
+ipv6 router ospf 106
+ router-id 10.21.0.1
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface GigabitEthernet0/2
+!
+ipv6 ioam timestamp
+!
+!
+access-list 10 permit 10.20.0.0 0.0.0.255
+access-list 10 permit 10.21.0.0 0.0.0.255
+access-list 10 permit 172.20.0.0 0.0.255.255
+access-list 10 permit 172.21.0.0 0.0.255.255
+access-list 10 permit 172.31.0.0 0.0.0.3
+!
+!
+radius server HQ-SRV
+ address ipv4 172.20.101.10 auth-port 1812 acct-port 1813
+ key Skills39
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+line aux 0
+line vty 0 4
+ exec-timeout 0 0
+ transport input none
+!
+no scheduler allocate
+!
+end
