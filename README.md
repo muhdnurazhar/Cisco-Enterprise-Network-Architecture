@@ -508,6 +508,7 @@ BR-IR1#
 ```
 
 Verification of IPv6 Route Redistribution & Tagging: 
+
 EIGRP: 
 ```bash
 HQ-IR2#show ipv6 eigrp topology dead:beef:cafe:2101::/64        
@@ -567,4 +568,267 @@ OE2 DEAD:BEEF:CAFE:3002::/64 [110/20], tag 34
      via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
 OE2 DEAD:BEEF:CAFE:FFFF::/64 [110/20], tag 34
      via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
+```
+
+## 4. Secure WAN & VPN Tunnels
+
+### Overview
+This objective ensures secure connectivity between Headquarters, Branch, and Remote sites using encrypted tunnels over the public internet. It uses certificate-based authentication for both DMVPN and IKEv2 IPsec.
+
+### How It Works
+1. DMVPN (Dynamic Multipoint VPN) is used for scalable hub-to-spoke and spoke-to-spoke communication.
+2. IKEv2 IPsec provides strong encryption (AES-256 + SHA-256) with RSA certificates from WIN-SRV (SCEP).
+3. The solution is dual-stack (IPv4 + IPv6) using Tunnel 100.
+
+### Verification Commands
+
+**Step 1: DMVPN Tunnel Status**
+
+HQ-EDGE:
+```bash
+HQ-EDGE#show dmvpn 
+Legend: Attrb --> S - Static, D - Dynamic, I - Incomplete
+        N - NATed, L - Local, X - No Socket
+        T1 - Route Installed, T2 - Nexthop-override
+        C - CTS Capable, I2 - Temporary
+        # Ent --> Number of NHRP entries with same NBMA peer
+        NHS Status: E --> Expecting Replies, R --> Responding, W --> Waiting
+        UpDn Time --> Up or Down Time for a Tunnel
+==========================================================================
+
+Interface: Tunnel100, IPv4 NHRP Details 
+Type:Hub, NHRP Peers:2, 
+
+ # Ent  Peer NBMA Addr Peer Tunnel Add State  UpDn Tm Attrb
+ ----- --------------- --------------- ----- -------- -----
+     1 3.3.3.3              172.31.1.2    UP 00:10:20     D
+     1 4.4.4.4              172.31.1.3    UP 00:10:14     D
+
+Interface: Tunnel100, IPv6 NHRP Details 
+Type:Hub, Total NBMA Peers (v4/v6): 2
+    1.Peer NBMA Address: 3.3.3.3
+        Tunnel IPv6 Address: DEAD:BEEF:CAFE:FFFF::2
+        IPv6 Target Network: DEAD:BEEF:CAFE:FFFF::2/128
+        # Ent: 1, Status: UP, UpDn Time: 00:10:20, Cache Attrib: D
+    2.Peer NBMA Address: 4.4.4.4
+        Tunnel IPv6 Address: DEAD:BEEF:CAFE:FFFF::3
+        IPv6 Target Network: DEAD:BEEF:CAFE:FFFF::3/128
+        # Ent: 1, Status: UP, UpDn Time: 00:10:14, Cache Attrib: D
+```
+
+REM1-RTR:
+```bash
+REM1-RTR#show dmvpn 
+Legend: Attrb --> S - Static, D - Dynamic, I - Incomplete
+        N - NATed, L - Local, X - No Socket
+        T1 - Route Installed, T2 - Nexthop-override
+        C - CTS Capable, I2 - Temporary
+        # Ent --> Number of NHRP entries with same NBMA peer
+        NHS Status: E --> Expecting Replies, R --> Responding, W --> Waiting
+        UpDn Time --> Up or Down Time for a Tunnel
+==========================================================================
+
+Interface: Tunnel100, IPv4 NHRP Details 
+Type:Spoke, NHRP Peers:1, 
+
+ # Ent  Peer NBMA Addr Peer Tunnel Add State  UpDn Tm Attrb
+ ----- --------------- --------------- ----- -------- -----
+     1 1.1.1.1              172.31.1.1    UP 00:11:00     S
+
+Interface: Tunnel100, IPv6 NHRP Details 
+Type:Spoke, Total NBMA Peers (v4/v6): 1
+    1.Peer NBMA Address: 1.1.1.1
+        Tunnel IPv6 Address: DEAD:BEEF:CAFE:FFFF::1
+        IPv6 Target Network: DEAD:BEEF:CAFE:FFFF::/64
+        # Ent: 1, Status: UP, UpDn Time: 00:11:00, Cache Attrib: S
+```
+
+
+**Step 2: IKEv2 & IPSec Session**
+
+HQ-EDGE IKEv2:
+```bash
+HQ-EDGE#show crypto ikev2 sa
+ IPv4 Crypto IKEv2  SA 
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status 
+1         1.1.1.1/500           3.3.3.3/500           none/none            READY  
+      Encr: AES-CBC, keysize: 256, PRF: SHA256, Hash: SHA256, DH Grp:14, Auth sign: RSA, Auth verify: RSA
+      Life/Active Time: 86400/885 sec
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status 
+2         1.1.1.1/500           4.4.4.4/500           none/none            READY  
+      Encr: AES-CBC, keysize: 256, PRF: SHA256, Hash: SHA256, DH Grp:14, Auth sign: RSA, Auth verify: RSA
+      Life/Active Time: 86400/879 sec
+
+ IPv6 Crypto IKEv2  SA 
+
+```
+
+HQ-EDGE IPSec:
+```bash
+HQ-EDGE# show crypto ipsec sa
+interface: Tunnel100
+   local ident  (1.1.1.1/255.255.255.255/47/0)
+   remote ident (4.4.4.4/255.255.255.255/47/0)
+   current_peer 4.4.4.4 port 500
+
+    #pkts encaps: 365, #pkts encrypt: 365, #pkts digest: 365
+    #pkts decaps: 361, #pkts decrypt: 361, #pkts verify: 361
+
+     inbound esp sas:
+      spi: 0xC6F3622
+        transform: **esp-256-aes esp-sha256-hmac**
+        Status: **ACTIVE(ACTIVE)**
+
+     outbound esp sas:
+      spi: 0x69CCECF8
+        transform: **esp-256-aes esp-sha256-hmac**
+        Status: **ACTIVE(ACTIVE)**
+```
+
+**Step 3: Certificate Chain Validation**
+HQ-EDGE: 
+```bash
+HQ-EDGE#show crypto pki certificates 
+Certificate
+  Status: Available
+  Certificate Serial Number (hex): 1E0000000C613E2DDF7167C77000000000000C
+  Certificate Usage: General Purpose
+  Issuer: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Subject:
+    Name: HQ-EDGE.wsmb2026.net 
+    Serial Number: 93TGB181X85US5E98Q3S0
+    hostname=HQ-EDGE.wsmb2026.net
+    serialNumber=93TGB181X85US5E98Q3S0
+  CRL Distribution Points: 
+    http://98.76.54.10/CertEnroll/WSMB2026-CA.crl
+  Validity Date: 
+    start date: 16:27:05 MYT Jun 23 2026
+    end   date: 16:27:05 MYT Jun 22 2028
+  Associated Trustpoints: WSMB-CA 
+  Storage: nvram:WSMB2026-CA#C.cer
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 1675829B1A81C1BE4EF1C0D9FF3A6127
+  Certificate Usage: Signature
+  Issuer: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Subject: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Validity Date: 
+    start date: 15:05:08 MYT Oct 1 2025
+    end   date: 15:15:07 MYT Oct 1 2035
+  Associated Trustpoints: WSMB-CA 
+  Storage: nvram:WSMB2026-CA#6127CA.cer
+
+
+```
+
+REM1-RTR:
+```bash
+EM1-RTR#show crypto pki certificates 
+Certificate
+  Status: Available
+  Certificate Serial Number (hex): 1E0000000DCD5DFEAD19091D6200000000000D
+  Certificate Usage: General Purpose
+  Issuer: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Subject:
+    Name: REM1-RTR.wsmb2026.net 
+    Serial Number: 9CWC7KTNKQAX9SUYXF6R5
+    hostname=REM1-RTR.wsmb2026.net
+    serialNumber=9CWC7KTNKQAX9SUYXF6R5
+  CRL Distribution Points: 
+    http://98.76.54.10/CertEnroll/WSMB2026-CA.crl
+  Validity Date: 
+    start date: 22:46:07 MYT Jun 23 2026
+    end   date: 22:46:07 MYT Jun 22 2028
+  Associated Trustpoints: WSMB-CA 
+  Storage: nvram:WSMB2026-CA#D.cer
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 1675829B1A81C1BE4EF1C0D9FF3A6127
+  Certificate Usage: Signature
+  Issuer: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Subject: 
+    cn=WSMB2026-CA
+    dc=wsmb2026
+    dc=net
+  Validity Date: 
+    start date: 15:05:08 MYT Oct 1 2025
+    end   date: 15:15:07 MYT Oct 1 2035
+  Associated Trustpoints: WSMB-CA 
+  Storage: nvram:WSMB2026-CA#6127CA.cer
+````
+
+**Step 4: Spoke-To-Spoke & Connectivity Test**
+
+IPv4 Test Rechability REM1-RTR to HQ-SRV: 
+```bash
+REM1-RTR#traceroute 172.20.101.10 source tunnel 100
+Type escape sequence to abort.
+Tracing the route to 172.20.101.10
+VRF info: (vrf in name/id, vrf out name/id)
+  1 172.31.1.1 [AS 65000.1] 11 msec 9 msec 7 msec
+  2 172.20.0.6 [AS 65000.1] 11 msec 9 msec 8 msec
+  3 172.20.0.18 [AS 65000.1] 22 msec 13 msec 10 msec
+  4 172.20.101.10 [AS 65000.1] 20 msec 21 msec 27 msec
+
+
+REM1-RTR#ping 172.20.101.10 source tunnel 100      
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 172.20.101.10, timeout is 2 seconds:
+Packet sent with a source address of 172.31.1.2 
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 18/21/25 ms
+```
+IPv6 Test Rechability REM1-RTR to HQ-SRV: 
+```bash
+REM1-RTR#ping dead:beef:cafe:1101::10 source tunnel 100      
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to DEAD:BEEF:CAFE:1101::10, timeout is 2 seconds:
+Packet sent with a source address of DEAD:BEEF:CAFE:FFFF::2
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 18/21/29 ms
+
+
+REM1-RTR#traceroute dead:beef:cafe:1101::10 ?
+  <cr>  <cr>
+
+REM1-RTR#traceroute dead:beef:cafe:1101::10 
+Type escape sequence to abort.
+Tracing the route to DEAD:BEEF:CAFE:1101::10
+
+  1 DEAD:BEEF:CAFE:FFFF::1 9 msec 9 msec 21 msec
+  2  *  *  * 
+  3 DEAD:BEEF:CAFE:1101::FFF2 44 msec 14 msec 13 msec
+  4 DEAD:BEEF:CAFE:1101::10 21 msec 16 msec 15 msec
+```
+
+**Step 5: Dual-Stack Tunnel Verification (IPv6)**
+```bash
+REM1-RTR#show ipv6 interface tunnel 100
+Tunnel100 is up, line protocol is up
+  IPv6 is enabled
+  Global unicast address(es):
+    **DEAD:BEEF:CAFE:FFFF::2**, subnet is DEAD:BEEF:CAFE:FFFF::/64
+  MTU is **1400** bytes
+  Input features: IPv6 TCP Adjust MSS
+  Output features: IPv6 TCP Adjust MSS
+  Post_Encap features: IPSEC Post-encap output classification
 ```
