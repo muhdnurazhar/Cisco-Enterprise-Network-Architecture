@@ -1,64 +1,52 @@
 # Cisco-Based-Network-Architecture
-> A secure multi-site enterprise network featuring advanced multi-protocol routing, high-availability switching, and Dual-Stack DMVPN over IKEv2 IPsec.
+
+> A secure, dual-stack multi-site enterprise network featuring advanced routing, high availability, and certificate-based VPN connectivity.
 
 ## Introduction
-> This repository showcases a production-ready, multi-site enterprise network simulated using Cisco modeling tools. The project demonstrates advanced engineering skills in bridging core headquarters, regional branches, and remote offices over a simulated public internet transit backbone.
+This repository presents a comprehensive simulation of a production-grade enterprise network based on **WorldSkills Malaysia Module C (IT Network System Administration)**. 
 
-## Project Objective & Site Breakdown
-The infrastructure has been divided into 3 segments:
-* **Headquarters:** Centralizes corporate core services, EIGRP routing, dual-gateway HSRP, and acts as the DMVPN Hub.
-* **Branch:** Simulates a remote office executing OSPFv2/OSPFv3 routing with manual DR/BDR election, area summarization.
-* **ISP & Remote Sites:** Simulates the public internet core running eBGP routing, SCEP certificate authority, and dynamic spoke VPN nodes.
+The project demonstrates advanced Cisco networking skills in designing and implementing a secure, highly available, and scalable infrastructure connecting Headquarters, Branch office, and Remote sites across a simulated public internet.
 
 ## Project Objective
-To build a reliable enterprise network solution that ensures constant uptime, seamless connection between multi-site branches, and strong network security.
+To build a reliable, secure, and resilient enterprise network that ensures:
+- Constant uptime and redundancy
+- Secure device and user access
+- Seamless multi-protocol routing
+- Encrypted communication between all sites
 
-**1. Centralized Authentication & Device Access:** Secures network devices using RADIUS AAA console login, local user backups, and PBKDF2 password hashing.
+## Site Breakdown
+- **Headquarters**: Core network with EIGRP, HSRP, and DMVPN Hub.
+- **Branch**: OSPFv2/OSPFv3 domain with controlled DR/BDR and summarization.
+- **ISP & Remote Sites**: eBGP connectivity, SCEP CA, and dynamic DMVPN spokes.
 
-**2. High-Availability & Path Redundancy:** Eliminates single points of failure by implementing an default route failover mechanism across BGP edges, combined with HSRP dual gateway switching.
-
-**3. Multi-Protocol Routing Optimization:** Resolves complex multi-vendor routing by setting up mutual route redistribution using cryptographic tags to prevent data loops between EIGRP, OSPFv2, OSPFv3 boundaries.
-
-**4. Secure WAN & VPN Tunnels:** Connects sites safely using certificate-authenticated Dual-Stack DMVPN and high-grade IKEv2 IPsec encryption.
-
+## Key Objectives
+1. **Centralized Authentication** – RADIUS AAA with local PBKDF2 fallback.
+2. **High Availability** – HSRP gateway redundancy + BGP default route failover.
+3. **Multi-Protocol Routing** – Mutual redistribution with route tagging between EIGRP, OSPFv2, and OSPFv3.
+4. **Secure WAN Connectivity** – Certificate-authenticated Dual-Stack DMVPN with IKEv2 IPsec.
 ## Technical Architecture & Implementation Workflow
 
 <img width="872" height="385" alt="image" src="https://github.com/user-attachments/assets/b7d628f5-c49b-42f1-93c9-05bbca850df8" />
 
-### HEADQUARTERS 
-> Acts as the corporate network center hosting core computing services, primary routing policies, and internal local distribution.
-* **High-Availability Switching:** Deploys VTP for automated VLAN management, provisions LACP EtherChannel with load balancing, and Rapid Spanning Tree for failover.
-* **Advanced EIGRP:** Deploys EIGRP Named Mode optimized for secure neighbor adjacencies, efficient route summarization, and automated default route injection.
-* **First Hop Gateway Redundancy:** Configures HSRP services active standby to ensure VLAN can handle into balance local endpoint traffic.
-* **Edge Access Security:** Restricts unauthorized physical port access by using switchport Port-Security and ErrDisable recovery timers.
-
-### BRANCH
-> Simulates a distributed regional hub executing independent routing domains while maintaining strict connectivity with Headquarters.
-* **Dual-Stack Interior Routing:** Implements OSPFv2 and OSPFv3 across a single backbone area with manual DR/BDR election tuning on local distribution blocks.
-* **Infrastructure Management:** Activates secure SNMPv3 monitoring directed to a centralized performance monitoring server.
-* **Cisco Proprietary Switching:** Sets up automated trunk configurations running Cisco proprietary PAgP EtherChannel with load balancing rules.
-* **Localized Edge Services:** Deploys local dynamic NAT translation pools and IP Helper DHCP assignment scopes to handle address distribution for clients.
-
-### ISP & WAN 
-> Simulates global internet transit providers, public core DNS services, and distributed remote branch endpoints.
-* **External Core Border Routing:** Establishes eBGP peer sessions between all edge devices and using different Autonomous Systems to distribute public route maps.
-* **Dynamic Multipoint GRE over IPsec:** Constructs a Dual-Stack DMVPN using RSA digital certificates obtained over Simple Certificate Enrollment Protocol (SCEP).
-* **IKEv2 IPsec Tunnel Security:** Configured secure IKEv2 IPsec tunnels with certificate authentication, using strong encryption such as AES-256, SHA-256, and DH Group 14 to protect data traffic between sites.
+### Core Technologies
+- **Switching**: VTPv3, EtherChannel (LACP & PAgP), Rapid STP, Port Security
+- **Routing**: EIGRP Named Mode, OSPFv2/OSPFv3, BGP, Route Redistribution with tagging
+- **Redundancy**: HSRP, BGP Default Route Failover
+- **Security**: RADIUS AAA, PBKDF2 hashing, Port Security, IKEv2 IPsec + RSA Certificates
+- **Services**: NAT, DHCP, NTP, SNMPv3
+- **VPN**: Dual-Stack DMVPN (Phase 3) over IKEv2
 
 # Network Infrastructure Verification & Audit Report
 
-This section provides comprehensive verification procedures, live system outputs, and behavioral analysis to prove the absolute operational integrity of the simulated enterprise architecture. Each validation directly aligns with the defined project objectives.
-
+All objectives have been successfully implemented and tested.
 ---
 
-## 1. Centralized Authentication & Device Access
+### 1. Centralized Authentication & Device Access
 
-### Overview
-Network security begins with securing access to the control plane of the infrastructure itself. This module validates that network administrators log into corporate devices using a centralized security database, preventing unauthorized configuration changes while ensuring a secure failback mechanism.
-
-### How It Works
-When an engineer connects to a core router or switch console, the device does not check its local memory. Instead, it queries a centralized RADIUS server hosted on `HQ-SRV` (172.20.101.10) using secure communication keys. If the RADIUS server is online, it validates the user and assigns their specific privilege level. If the server goes completely offline, the system automatically switches to a high-security local database as a backup.
-
+**Verification:**
+- RADIUS AAA configured on edge devices with fallback to local database.
+- Users `radiusr1` (priv 15) and `radiusr2` (priv 3) authenticated via HQ-SRV.
+- Local `admin` account uses secure PBKDF2 (Type 9) hashing.
 ### Verification Commands
 
 **Step 1: Check RADIUS Server Status**
@@ -163,14 +151,17 @@ HQ-EDGE#show users
 
 HQ-EDGE#
 ```
-## 2. High-Availability & Path Redundancy
+### 2. High-Availability & Path Redundancy
 
-### Overview
-This objective ensures there is no single point of failure in the network. It combines HSRP for local gateway redundancy and default route failover between HQ-EDGE and BR-EDGE to maintain connectivity even when one link or device fails.
+**HSRP (Gateway Redundancy):**
+- HQ-DSW1 & BR-DSW2 act as Active gateways for respective VLANs.
+- Automatic failover tested successfully.
 
-### How It Works
-HSRP provides automatic gateway failover for end devices in VLAN 101 and VLAN 102. Default Route Failover ensures that if one edge router loses its BGP connection to the ISP, the other edge router automatically takes over the default route.
-
+**Default Route Failover:**
+- Normal condition: Default route via BGP from ISP.
+- ISP link failure on HQ-EDGE → Route automatically failed over to BR-EDGE.
+- Link restored → Route returned to primary BGP path.
+- 
 ### Verification Commands
 
 **Step 1: HSRP Verification (Dual Gateway)**
@@ -242,16 +233,20 @@ Routing entry for 0.0.0.0/0, supernet
       MPLS label: none
 ```
 
-## 3. Multi-Protocol Routing Optimization
+### 3. Multi-Protocol Routing Optimization
 
-### Overview
-This objective handles complex routing between different protocols (EIGRP in HQ/DMVPN and OSPF in Branch). Mutual route redistribution is configured with route tagging to prevent routing loops and ensure optimal path selection.
+**Verification:**
+- Stable EIGRP adjacencies in HQ and DMVPN.
+- Stable OSPFv2/OSPFv3 adjacencies in Branch (with correct DR/BDR election).
+- Mutual redistribution performed at HQ-IR2.
 
-### How It Works
-1. EIGRP is used in Headquarters and DMVPN.
-2. OSPF (OSPFv2 & OSPFv3) is used in the Branch network.
-3. Mutual redistribution is performed at HQ-IR2.
-4. Route tags (34 and 12) are used to control which routes are redistributed and to prevent routing loops.
+**Route Tagging (Loop Prevention):**
+- EIGRP → OSPF: **Tag 34**
+- OSPF → EIGRP: **Tag 12**
+
+**IPv6 Routing:**
+- EIGRPv6 and OSPFv3 neighbors established.
+- IPv6 redistribution working with correct tagging.
 
 ### Verification Commands
 
@@ -570,15 +565,23 @@ OE2 DEAD:BEEF:CAFE:FFFF::/64 [110/20], tag 34
      via FE80::5054:FF:FEB4:46CA, GigabitEthernet0/3
 ```
 
-## 4. Secure WAN & VPN Tunnels
+### 4. Secure WAN & VPN Tunnels
 
-### Overview
-This objective ensures secure connectivity between Headquarters, Branch, and Remote sites using encrypted tunnels over the public internet. It uses certificate-based authentication for both DMVPN and IKEv2 IPsec.
+**DMVPN Status:**
+- Tunnel100 is up for both IPv4 and IPv6.
+- Dynamic spoke-to-spoke communication functional.
 
-### How It Works
-1. DMVPN (Dynamic Multipoint VPN) is used for scalable hub-to-spoke and spoke-to-spoke communication.
-2. IKEv2 IPsec provides strong encryption (AES-256 + SHA-256) with RSA certificates from WIN-SRV (SCEP).
-3. The solution is dual-stack (IPv4 + IPv6) using Tunnel 100.
+**IKEv2 IPsec Encryption:**
+- AES-256 encryption with SHA-256 integrity and DH Group 14.
+- RSA certificate authentication via SCEP (WIN-SRV).
+- IPsec SAs active with successful encryption/decryption.
+
+**Certificate Validation:**
+- Valid certificates enrolled on all DMVPN routers.
+
+**Connectivity Test:**
+- Full reachability (IPv4 & IPv6) from spokes to HQ and between spokes.
+- MTU optimized at 1400 bytes with TCP Adjust-MSS applied.
 
 ### Verification Commands
 
